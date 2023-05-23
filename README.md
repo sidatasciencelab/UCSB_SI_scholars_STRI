@@ -35,7 +35,7 @@ The conceptual backdrop of these workshops will lead students through computatio
 Instructors and students will investigate these questions together first in a short series of introductory talks, later by using the Merlin phone app to collect field census of birds in Gamboa and Pipeline road, and finally by taking advantage of public and Migratory Bird Center datasets to develop quantitative ecology skills and better understand metrics of biodiversity. In the latter half of the trip, students will have the option to use eBird data or as yet to be define marine community data to develop a group-based final project compare BCI and Santa Cruz Island using the skills they develop in the first week. 
 
 ------------
-### Leveraging published datasets to examine the impacts of coffee cultivation practices on birds
+## Leveraging published datasets to examine the impacts of coffee cultivation practices on birds
 
 One of the first objectives for our students will be to combine field data collected by Dr. Bennett and her colleagues with published global data sets of avian biodiversity. Students will learn first hand how field data can be combined with published work to examine specific questions (in the case tropical agro-forestry practices and their impacts) that were originally outside the purview of the published work. Students will gain skills in identifying and downloading published datasets from online repositories, combining those data with data collected from the field, and using this combination to assess the impacts of coffee cultivation practices on the biodiversity of birds in coffee plantations. Students will have censuses of bird species in forest, sun coffee, and shade coffee field sites. These species lists will be used to measure and compare biodiversity at the field sites using the following datasets: 
 
@@ -88,6 +88,22 @@ Lum, Deon, Frank E. Rheindt, and Ryan A. Chisholm. "Tracking scientific discover
 &emsp; &emsp; [Link to White et al. 2019](https://www.nature.com/articles/s41467-019-10253-6)   
 &emsp; &emsp; [Link to BirdLife International geodatabase request](http://datazone.birdlife.org/species/requestdis)  
 
+```
+BirdLife International and NatureServe. Bird Species Distribution Maps of the World (BirdLife International, Cambridge, 2014).
+
+@techreport{birdlife2014bird,
+  title={Bird species distribution maps of the world},
+  author={BirdLife International and NatureServe},
+  institution={BirdLife International},
+  address = {Cambridge, UK}
+  year={2014}
+  number = {Version CHECK}
+}
+```
+----------
+## Final Project - Comparisons of biodiversity and climate between BCI and SCI
+
+The final project will build on the skills 
 
 
 
