@@ -86,6 +86,7 @@ Lum, Deon, Frank E. Rheindt, and Ryan A. Chisholm. "Tracking scientific discover
 3. The third dataset we intend to leverage is a geodatabase of the geographic distributions of all bird species of the world. Each species range is mapped as a polygon and can be used to generate global gridded presence/absence data for each bird species censused in a given local community. Mapping the broad geographic distributions of species that are co-located in a specific field site gives an understanding of the geographic differences between communities based on how the species are ranged elsewhere. Species lists which entirely non-overlapping may generate very similar lists, thus indicated local partitioning of habitat by distinct communities. Such map-based visualizations are called "assemblage dispersion fields" (White et al. 2019).     
 
 &emsp; &emsp; [Link to White et al. 2019](https://www.nature.com/articles/s41467-019-10253-6)   
+
 &emsp; &emsp; [Link to BirdLife International geodatabase request](http://datazone.birdlife.org/species/requestdis)  
 
 ```
