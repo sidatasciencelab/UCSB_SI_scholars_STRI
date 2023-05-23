@@ -62,7 +62,7 @@ Tobias, Joseph A., et al. "AVONET: morphological, ecological and geographical da
 ```
 
 #### Phylogenetic Diversity of Birds
-2. The second dataset represents all known evolutionary relationships between the birds of the world. While a number of phylogenetic trees have been published, we will make use of a tree that was recently assembled to make use of the most modern interpretation of 5 previously published trees. 
+2. The second dataset represents all known evolutionary relationships between the birds of the world. While a number of phylogenetic trees have been published, we will make use of a tree that was recently assembled to make use of the most modern interpretation of 5 previously published trees. Methods to assemble these data into a consensus tree are found [here](http://blog.phytools.org/2016/04/consensus-methods-and-computing-average.html)
 
 &emsp; &emsp; [Link to Lum et al. 2022](https://royalsocietypublishing.org/doi/10.1098/rspb.2022.0088)  
 
@@ -82,6 +82,11 @@ Lum, Deon, Frank E. Rheindt, and Ryan A. Chisholm. "Tracking scientific discover
   publisher={The Royal Society}
 }
 ```
+#### Geographic Distributions of Birds
+3. The third dataset we intend to leverage is a geodatabase of the geographic distributions of all bird species of the world. Each species range is mapped as a polygon and can be used to generate global gridded presence/absence data for each bird species censused in a given local community. Mapping the broad geographic distributions of species that are co-located in a specific field site gives an understanding of the geographic differences between communities based on how the species are ranged elsewhere. Species lists which entirely non-overlapping may generate very similar lists, thus indicated local partitioning of habitat by distinct communities. Such map-based visualizations are called "assemblage dispersion fields" (White et al. 2019).     
+
+&emsp; &emsp; [Link to White et al. 2019](https://www.nature.com/articles/s41467-019-10253-6)   
+&emsp; &emsp; [Link to BirdLife International geodatabase request](http://datazone.birdlife.org/species/requestdis)  
 
 
 
