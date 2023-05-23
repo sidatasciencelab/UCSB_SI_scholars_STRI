@@ -104,7 +104,7 @@ BirdLife International and NatureServe. Bird Species Distribution Maps of the Wo
 ----------
 ## Final Project - Comparisons of biodiversity and climate between BCI and SCI
 
-The final project will build on the skills 
+The final project will build on the skills developed in the first half of our trip. More to come...
 
 
 
