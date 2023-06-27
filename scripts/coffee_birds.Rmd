@@ -1,0 +1,40 @@
+---
+title: "Impacts of agroforestry practices on the biodiversity of Panamanian birds"
+author: "Alex White"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, message=FALSE, warnings=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(sf)
+sf_use_s2(FALSE)
+library(renv)
+library(taxize)
+```
+
+
+
+
+```{r}
+coffee_birds <- read.csv("../data/coffee_Bird_Data.csv", stringsAsFactors = F)
+head(coffee_birds)
+```
+
+
+```{r}
+common_names <- coffee_birds %>% distinct(Common_Name)
+common_names <- as.vector(common_names$Common_Name)
+```
+
+Use taxize to standardize the common names to latin species epithets ("genus_species")
+
+```{r}
+uid <- get_tsn(common_names, searchtype = "common", accepted = TRUE)
+
+```
+
+
+
+
