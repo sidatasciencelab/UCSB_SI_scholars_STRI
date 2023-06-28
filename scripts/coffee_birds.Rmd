@@ -32,9 +32,11 @@ Use taxize to standardize the common names to latin species epithets ("genus_spe
 
 ```{r}
 uid <- get_tsn(common_names, searchtype = "common", accepted = TRUE)
-
 ```
 
+```{r}
+species_names <- comm2sci(uid, db = "itis")
+```
 
 
 
