@@ -44,7 +44,7 @@ Once you select the proper resources you need (described in detail below), click
 
 4. Click `Clone`. Cloning will download a new directory in your persistent storage entitled `UCSB_SI_scholars_STRI`. This will contain most of the files you need for our course. 
 
-5. Navigate to the `File` and select `Hub Control Panel`. Click the red `Stop My Server` button, and finally select `-> Logout` in the top right of the screen.
+5. Navigate to the `File` tab at the top of the screen and select `Hub Control Panel`. Click the red `Stop My Server` button, and finally select `-> Logout` in the top right of the screen.
 
 ## Working with R Studio
 
