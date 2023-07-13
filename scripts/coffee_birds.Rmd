@@ -15,7 +15,7 @@ library(taxize)
 ```
 
 
-
+## A game of names...
 
 ```{r}
 coffee_birds <- read.csv("../data/coffee_Bird_Data.csv", stringsAsFactors = F)
@@ -39,7 +39,7 @@ head(coffee_joined)
 coffee_species <- coffee_joined %>% filter(CATEGORY == "species")
 ```
 
-Use taxize to standardize the common names to latin species epithets ("genus_species")
+We could also use a more generalized R package `taxize` to standardize the common names to latin species epithets ("genus_species"). We won't develop this method but the beginnings of this approach are shown below. 
 
 ```{r}
 common_names <- coffee_birds %>% distinct(Common_Name)
@@ -47,6 +47,11 @@ common_names <- as.vector(common_names$Common_Name)
 uid <- get_tsn(common_names[1:3], searchtype = "common", accepted = TRUE)
 ```
 
+## Quantifying biodiversity
+
+The goal of this exercise is to better understand how scientists quantify metrics of biodiversity and how those metrics are used to both make decisions in conservation and to understand fundamental processes of biology. Below we will work with the bird coffee dataset to quantify diversity 
+
+### Species richness
 ```{r}
 species_names <- comm2sci(uid, db = "itis")
 ```
