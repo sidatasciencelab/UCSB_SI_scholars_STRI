@@ -22,16 +22,29 @@ coffee_birds <- read.csv("../data/coffee_Bird_Data.csv", stringsAsFactors = F)
 head(coffee_birds)
 ```
 
+We downloaded the ebird taxonomy from the Cornell Lab of Ornithology [here](https://www.birds.cornell.edu/clementschecklist/download/?__hstc=60209138.ef3edea8ce1040824b180bde7f920a82.1687545990397.1687545990397.1689258046438.2&__hssc=60209138.2.1689258046438&__hsfp=1390145134&_gl=1*1kufgl6*_ga*MTk2MzQwNTE1MC4xNjg3NDU5NDQ4*_ga_QR4NVXZ8BM*MTY4OTI1ODA0Ni4zLjEuMTY4OTI1ODA4NS4yMS4wLjA.&_ga=2.109099270.241330988.1689258046-1963405150.1687459448). The .csv is available in the `/data` folder in the github repo. 
 
 ```{r}
-common_names <- coffee_birds %>% distinct(Common_Name)
-common_names <- as.vector(common_names$Common_Name)
+ebird_taxonomy <- read.csv("../data/ebird_taxonomy_v2022.csv", stringsAsFactors = F)
+head(ebird_taxonomy)
+```
+
+```{r}
+coffee_joined <- left_join(coffee_birds, ebird_taxonomy, by = join_by(Common_Name == PRIMARY_COM_NAME))
+head(coffee_joined)
+```
+
+
+```{r}
+coffee_species <- coffee_joined %>% filter(CATEGORY == "species")
 ```
 
 Use taxize to standardize the common names to latin species epithets ("genus_species")
 
 ```{r}
-uid <- get_tsn(common_names, searchtype = "common", accepted = TRUE)
+common_names <- coffee_birds %>% distinct(Common_Name)
+common_names <- as.vector(common_names$Common_Name)
+uid <- get_tsn(common_names[1:3], searchtype = "common", accepted = TRUE)
 ```
 
 ```{r}
