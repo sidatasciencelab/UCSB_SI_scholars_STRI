@@ -2,8 +2,14 @@
 title: "Impacts of agroforestry practices on the biodiversity of Panamanian birds"
 author: "Alex White"
 date: "`r Sys.Date()`"
-output: html_document
+output: rmarkdown::github_document
 ---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  fig.path = "coffee_birds_figs/coffee_birds-"
+)
+```
 
 ```{r setup, message=FALSE, warnings=FALSE}
 library(tidyverse)
@@ -126,6 +132,7 @@ Here we still need to add a method to store the results. To do this we start by 
 sp <- vector(mode = "numeric", length = length(point_names))
 ```
 
+Then add each result in the right position in the `sp` vector. For each trip through the loop put the output into the empty vector at the `i`th position.
 
 ```{r}
 for (i in 1:length(point_names)){ #start the for loop
@@ -140,7 +147,7 @@ for (i in 1:length(point_names)){ #start the for loop
 sp  # print the value of species richness
 ```
 
-
+Now that we've built the loop and saved the output, we need to attach our old 
 
 
 
