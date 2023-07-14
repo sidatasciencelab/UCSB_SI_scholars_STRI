@@ -162,12 +162,22 @@ sp_richness <- data.frame(sp, point_names)
 head(sp_richness)
 ```
 
-Now `left_join()` with the `point_metadata` table to aggregate our metadata in a single table: 
+Now we can use `left_join()` with the `point_metadata` table to aggregate our metadata in a single table: 
 ```{r}
 point_metadata <- left_join(point_metadata, sp_richness, by = join_by(Name_Point == point_names))
 head(point_metadata)
 ```
-Voila! Now we can easily use the `point_metadata` table to analyze and visualize the relationships between the various metrics we are interested in! How does the habitat type (sun vs. shade) relate to the number of species at the point? How does canpoy cover play a role? How do we quantify those effects? While it seemed trivial at firest to count the species in each point, we have now developed a programatic approach that allows  
+Voila! Now we can easily use the `point_metadata` table to analyze and visualize the relationships between the various metrics we are interested in! How does the habitat type (sun vs. shade) relate to the number of species at the point? How does canopy cover play a role? How do we quantify those effects? While it seemed trivial at first to count the species in each point, we have now developed a programmatic approach that we can modify to generate other metrics of diversity that go beyond mere species counts. 
+
+### Functional richness
+
+Counting species is one way to measure the diversity of an ecosystem, but species may or may not be the appropriate unit of measurement for a particular research question or conservation decision. For example, biologists may consider how species interact with their environments and instead look to count how different types of interactions are represented by the species that they observe. In this framework, 2 species may share the exact same traits that govern their interactions with the environment, and so while 2 species may be counted from a taxonomic richness point of view only 1 *functional group* would be counted from a *functional richness* perspective. 
+
+One of the most important functional traits for bird species is the size and shape of their bill. The bill is the main anatomical feature that birds use to interact with their environment and bill traits combined with the overall size of a species can tell biologists a lot about what a bird does in an ecosystem. 
+
+#####BIRD BILL PHOTO#########
+
+
 
 
 
