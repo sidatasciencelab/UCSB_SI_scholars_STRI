@@ -147,8 +147,20 @@ for (i in 1:length(point_names)){ #start the for loop
 sp  # print the value of species richness
 ```
 
-Now that we've built the loop and saved the output, we need to attach our old 
+Now that we've built the loop and saved the output, we need to combine these data with our original dataset to pair the calculated metric `sp` with the `point_names`. But because there are a number of other variables that have also been measured for each point and we expect to add more moving forward, let's combine the `sp` vector with a larger metadata table. 
 
+```{r}
+point_metadata <- read.csv("../data/point_metadata.csv", stringsAsFactors = F)
+head(point_metadata)
+```
+
+We know our `sp` vector is ordered by the 
+
+
+```{r}
+coffee_joined <- left_join(point_metadata, ebird_taxonomy, by = join_by(Common_Name == PRIMARY_COM_NAME))
+head(coffee_joined)
+```
 
 
 
