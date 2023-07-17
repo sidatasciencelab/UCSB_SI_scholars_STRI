@@ -20,19 +20,18 @@ library(renv)
 library(taxize)
 ```
 
-
 ## A game of names...
 
 ```{r}
 coffee_birds <- read.csv("../data/coffee_Bird_Data.csv", stringsAsFactors = F)
-head(coffee_birds)
+glimpse(coffee_birds)
 ```
 
-We downloaded the ebird taxonomy from the Cornell Lab of Ornithology [here](https://www.birds.cornell.edu/clementschecklist/download/?__hstc=60209138.ef3edea8ce1040824b180bde7f920a82.1687545990397.1687545990397.1689258046438.2&__hssc=60209138.2.1689258046438&__hsfp=1390145134&_gl=1*1kufgl6*_ga*MTk2MzQwNTE1MC4xNjg3NDU5NDQ4*_ga_QR4NVXZ8BM*MTY4OTI1ODA0Ni4zLjEuMTY4OTI1ODA4NS4yMS4wLjA.&_ga=2.109099270.241330988.1689258046-1963405150.1687459448). The .csv is available in the `/data` folder in the github repo. 
+We downloaded the ebird taxonomy from the Cornell Lab of Ornithology [here](https://www.birds.cornell.edu/clementschecklist/download/?__hstc=60209138.ef3edea8ce1040824b180bde7f920a82.1687545990397.1687545990397.1689258046438.2&__hssc=60209138.2.1689258046438&__hsfp=1390145134&_gl=1*1kufgl6*_ga*MTk2MzQwNTE1MC4xNjg3NDU5NDQ4*_ga_QR4NVXZ8BM*MTY4OTI1ODA0Ni4zLjEuMTY4OTI1ODA4NS4yMS4wLjA.&_ga=2.109099270.241330988.1689258046-1963405150.1687459448). The .csv is available in the `/data` folder in the github repo.
 
 ```{r}
 ebird_taxonomy <- read.csv("../data/ebird_taxonomy_v2022.csv", stringsAsFactors = F)
-head(ebird_taxonomy)
+glimpse(ebird_taxonomy)
 ```
 
 ```{r}
@@ -40,12 +39,11 @@ coffee_joined <- left_join(coffee_birds, ebird_taxonomy, by = join_by(Common_Nam
 head(coffee_joined)
 ```
 
-
 ```{r}
 coffee_species <- coffee_joined %>% filter(CATEGORY == "species")
 ```
 
-We could also use a more generalized R package `taxize` to standardize the common names to latin species epithets ("genus_species"). We won't develop this method but the beginnings of this approach are shown below. 
+We could also use a more generalized R package `taxize` to standardize the common names to latin species epithets ("genus_species"). We won't develop this method but the beginnings of this approach are shown below.
 
 ```{r}
 common_names <- coffee_birds %>% distinct(Common_Name)
@@ -55,13 +53,13 @@ uid <- get_tsn(common_names[1:3], searchtype = "common", accepted = TRUE)
 
 ## Quantifying biodiversity
 
-The goal of this exercise is to better understand how scientists quantify metrics of biodiversity and how those metrics are used to both make decisions in conservation and to understand fundamental processes of biology. Below we will work with the bird coffee dataset to quantify various metrics of diversity for different study plots in the coffee dataset, and to understand how values of diversity changes depending on what species features we select to represent biological diversity.  
+The goal of this exercise is to better understand how scientists quantify metrics of biodiversity and how those metrics are used to both make decisions in conservation and to understand fundamental processes of biology. Below we will work with the bird coffee dataset to quantify various metrics of diversity for different study plots in the coffee dataset, and to understand how values of diversity changes depending on what species features we select to represent biological diversity.
 
 ### Taxonomic richness
 
-Perhaps the simplest metric of biodiversity is taxonomic richness, or the number of individual taxonomic groups represented at the study location. Taxonomic groups can represent any taxonomic rank in the Linnaean taxonomic system (e.g., order, family, genus, species), and depending on the study, difference ranks are used as a unit of richness. All of the species in our dataset are birds, and so they are all in the same class *Aves*. The taxonomic rank in our dataset is mostly at the level of species, so it makes good sense to quantify and compare *species richness* across our sites. 
+Perhaps the simplest metric of biodiversity is taxonomic richness, or the number of individual taxonomic groups represented at the study location. Taxonomic groups can represent any taxonomic rank in the Linnaean taxonomic system (e.g., order, family, genus, species), and depending on the study, difference ranks are used as a unit of richness. All of the species in our dataset are birds, and so they are all in the same class *Aves*. The taxonomic rank in our dataset is mostly at the level of species, so it makes good sense to quantify and compare *species richness* across our sites.
 
-First we need to understand how many points are surveyed in our data. 
+First we need to understand how many points are surveyed in our data.
 
 ```{r}
 point_names <- coffee_species %>% 
@@ -78,12 +76,13 @@ species_richness <- coffee_species %>% count(Point_Name)
 ```
 
 ### For loops
-Let's try something a bit more sophisticated. Digging deeper, it appears that these observations were collected on different days. The same species could be recorded multiple times per location. We need to approach the problem systematically. We can use a powerful tool called a `for` loop. 
 
-* Loops are the fundamental structure for repetition in programming
-* `for` loops perform the same action for each item in a list of things
+Let's try something a bit more sophisticated. Digging deeper, it appears that these observations were collected on different days. The same species could be recorded multiple times per location. We need to approach the problem systematically. We can use a powerful tool called a `for` loop.
 
-```
+-   Loops are the fundamental structure for repetition in programming
+-   `for` loops perform the same action for each item in a list of things
+
+```         
 for (item in list_of_items) {
   do_something(item)
 }
@@ -104,12 +103,13 @@ for (place in point_names){ #start the for loop
 }
 ```
 
-There is one obvious problem with the loop we've created - the results are merely printed. We need to store the results in an object (likely a vector), and we need to modify out loop in order to do that efficiently. 
+There is one obvious problem with the loop we've created - the results are merely printed. We need to store the results in an object (likely a vector), and we need to modify out loop in order to do that efficiently.
 
 ### Looping with an index & storing results
+
 R loops iterate over a series of values in a vector or other list like object. When we use that value directly this is called looping by value. But there is another way to loop, which is called looping by index. Looping by index loops over a list of integer index values, typically starting at 1. These integers are then used to access values in one or more vectors at the position indicated by the index.
 
-We often use `i` to stand for “index” as the variable we update with each step through the loop.
+We often use `i` to stand for "index" as the variable we update with each step through the loop.
 
 If we modified our previous loop to use an index it would look like this:
 
@@ -147,7 +147,7 @@ for (i in 1:length(point_names)){ #start the for loop
 sp  # print the value of species richness
 ```
 
-Now that we've built the loop and saved the output, we need to combine these data with our original dataset to pair the calculated metric `sp` with the `point_names`. But because there are a number of other variables that have also been measured for each point and we expect to add more moving forward, let's combine the `sp` vector with a larger metadata table. 
+Now that we've built the loop and saved the output, we need to combine these data with our original dataset to pair the calculated metric `sp` with the `point_names`. But because there are a number of other variables that have also been measured for each point and we expect to add more moving forward, let's combine the `sp` vector with a larger metadata table.
 
 ```{r}
 point_metadata <- read.csv("../data/point_metadata.csv", stringsAsFactors = F)
@@ -156,69 +156,99 @@ head(point_metadata)
 
 We know our `sp` vector is ordered according to the `point_names` vector. Let's bind those together in a dataframe and join that with the `point_metadata` table above. First generate the dataframe:
 
-
 ```{r}
 sp_richness <- data.frame(sp, point_names)
 head(sp_richness)
 ```
 
-Now we can use `left_join()` with the `point_metadata` table to aggregate our metadata in a single table: 
+Now we can use `left_join()` with the `point_metadata` table to aggregate our metadata in a single table:
+
 ```{r}
 point_metadata <- left_join(point_metadata, sp_richness, by = join_by(Name_Point == point_names))
 head(point_metadata)
 ```
-Voila! Now we can easily use the `point_metadata` table to analyze and visualize the relationships between the various metrics we are interested in! How does the habitat type (sun vs. shade) relate to the number of species at the point? How does canopy cover play a role? How do we quantify those effects? While it seemed trivial at first to count the species in each point, we have now developed a programmatic approach that we can modify to generate other metrics of diversity that go beyond mere species counts. 
+
+Voila! Now we can easily use the `point_metadata` table to analyze and visualize the relationships between the various metrics we are interested in! How does the habitat type (sun vs. shade) relate to the number of species at the point? How does canopy cover play a role? How do we quantify those effects? While it seemed trivial at first to count the species in each point, we have now developed a programmatic approach that we can modify to generate other metrics of diversity that go beyond mere species counts.
 
 ### Functional richness
 
-Counting species is one way to measure the diversity of an ecosystem, but species may or may not be the appropriate unit of measurement for a particular research question or conservation decision. For example, biologists may consider how species interact with their environments and instead look to count how different types of interactions are represented by the species that they observe. In this framework, 2 species may share the exact same traits that govern their interactions with the environment, and so while 2 species may be counted from a taxonomic richness point of view only 1 *functional group* would be counted from a *functional richness* perspective. 
+Counting species is one way to measure the diversity of an ecosystem, but species may or may not be the appropriate unit of measurement for a particular research question or conservation decision. For example, biologists may consider how species interact with their environments and instead look to count how different types of interactions are represented by the species that they observe. In this framework, 2 species may share the exact same traits that govern their interactions with the environment, and so while 2 species may be counted from a taxonomic richness point of view only 1 *functional group* would be counted from a *functional richness* perspective.
 
-One of the most important functional traits for bird species is the size and shape of their bill. The bill is the main anatomical feature that birds use to interact with their environment and bill traits combined with the overall size of a species can tell biologists a lot about what a bird does in an ecosystem. 
+One of the most important functional traits for bird species is the size and shape of their bill. The bill is the main anatomical feature that birds use to interact with their environment and bill traits combined with the overall size of a species can tell biologists a lot about what a bird does in an ecosystem.
 
-#####BIRD BILL PHOTO#########
+![**Morphological diversity of bird bills.** Top row (left to right): *Aethopyga gouldiae, Napothera malacoptila, Harpactes erythrocephalus, Cissa chinensis, Fratercula corniculata*. Second row (left to right): *Passer cinnamomeus, Aquila nipalensis, Anastomus oscitans, Serilophus lunatus, Phoenicopterus roseus.* Third row (left to right): *Recurvirostra avosetta, Corvus corax, Spilornis cheela, Chalcophaps indica, Thalassarche cauta.* Fourth row (left to right): *Ara ararauna, Phyllergates cucullatus, Paradoxornis flavirostris, Stachyris humei, Batrachostomus moniliger.* Bottom left: *Platalea leucorodia*. Fifth row (left to right): *Pomatorhinus ferruginosus, Pyrrhoplectes epauletta, Nestor notabilis.* Sixth row (left to right): *Pomatorhinus superciliaris, Diomedea epomophora, Upupa epops, Gallus gallus*. Bottom right: *Pelecanus philippensis*](../images/bird-bills.png)
+
+#### Merging traits with surveys
+
+For most of the history of modern science, the only way to measure a birds bill was to have the bird in hand. This was achieved either by capturing a live bird (often using a mist net) or by collecting a bird as a specimen to be kept in a natural history collection. The Division of Birds at Smithsonian National Museum of Natural History contains ~640,000 individual bird specimens, representing the 3rd largest bird collection in the world.   
+
+![Smithsonian National Museum of Natural History collections in the Division of Birds.](../images/birds_museum.png)
+But thanks to the efforts of biologists working with both these collections and with wild caught individuals in remote locations, trait data are now available in a publicly accessible dataset comprising most of the worlds bird species. These data were meticulously compiled using caliper measurements of traits from multiple specimens per species, and so can provide us an estimate of the functional traits of any bird species we encounter. Similar datasets are being generated for mammals, some plant groups, fossil species; the list goes on. These data provide us with the foundation for quantitative ecological studies of the relationship between traits and the environment. We can also ask how those traits evolved by combining trait data with DNA sequence data. These datasets are the modern basis for investigating fundamental questions in ecology and evolution.
+
+The bird species dataset is named AVONET; it is described in the following paper:
+
+```
+Tobias, Joseph A., et al. "AVONET: morphological, ecological and geographical data for all birds." Ecology Letters 25.3 (2022): 581-597. https://doi.org/10.1111/ele.13898
+
+@article{tobias2022avonet,
+  title={AVONET: morphological, ecological and geographical data for all birds},
+  author={Tobias, Joseph A and Sheard, Catherine and Pigot, Alex L and Devenish, Adam JM and Yang, Jingyi and Sayol, Ferran and Neate-Clegg, Montague HC and Alioravainen, Nico and Weeks, Thomas L and Barber, Robert A and others},
+  journal={Ecology Letters},
+  volume={25},
+  number={3},
+  pages={581--597},
+  year={2022},
+  publisher={Wiley Online Library}
+}
+```
+&emsp; &emsp; [Link to Tobias et al. 2022](https://onlinelibrary.wiley.com/doi/full/10.1111/ele.13898)  
+
+To get a full picture of the diversity contained in our Panamanian coffee dataset, let's extract trait data from AVONET for the species observed in the coffee plantations. 
+
+```{r}
+avonet <- read.csv("../data/AVONET_ebird.csv", stringsAsFactors = F)
+glimpse(avonet)
+```
 
 
+&emsp; &emsp; [Link to data from Tobias et al. 2022](https://figshare.com/s/b990722d72a26b5bfead) 
 
 
+# Appendix
 
-
-
-
-
-# Appendix 
-
-Exercises from https://datacarpentry.org/semester-biology/exercises/Loops-basic-for-loops-R/
+Exercises from <https://datacarpentry.org/semester-biology/exercises/Loops-basic-for-loops-R/>
 
 ## Basic For Loops (Loops)
 
-Exercises from https://datacarpentry.org/semester-biology/exercises/Loops-basic-for-loops-R/
+Exercises from <https://datacarpentry.org/semester-biology/exercises/Loops-basic-for-loops-R/>
 
-1. The code below prints the numbers 1 through 5 one line at a time. Modify it to print each of these numbers multiplied by 3.
+1.  The code below prints the numbers 1 through 5 one line at a time. Modify it to print each of these numbers multiplied by 3.
 
-```
+```         
 numbers <- c(1, 2, 3, 4, 5)
 for (number in numbers){
   print(number)
 }
 ```
 
-2. Write a for loop that loops over the following vector and prints out the mass in kilograms (mass_kg = 2.2 * mass_lb)
+2.  Write a for loop that loops over the following vector and prints out the mass in kilograms (mass_kg = 2.2 \* mass_lb)
 
-```
+```         
 mass_lbs <- c(2.2, 3.5, 9.6, 1.2)
 ```
 
-3. Complete the code below so that it prints out the name of each bird one line at a time.
+3.  Complete the code below so that it prints out the name of each bird one line at a time.
 
-```
+```         
 birds = c('robin', 'woodpecker', 'blue jay', 'sparrow')
 for (i in 1:length(_________)){
   print(birds[__])
 }
 ```
-4. Complete the code below so that it stores one area for each radius.
 
-```
+4.  Complete the code below so that it stores one area for each radius.
+
+```         
 radius <- c(1.3, 2.1, 3.5)
 areas <- vector(_____ = "numeric", length = ______)
 for (__ in 1:length(________)){
@@ -227,9 +257,9 @@ for (__ in 1:length(________)){
 areas
 ```
 
-5. Complete the code below to calculate an area for each pair of lengths and widths, store the areas in a vector, and after they are all calculated print them out:
+5.  Complete the code below to calculate an area for each pair of lengths and widths, store the areas in a vector, and after they are all calculated print them out:
 
-```
+```         
 lengths = c(1.1, 2.2, 1.6)
 widths = c(3.5, 2.4, 2.8)
 areas <- vector(length = __________)
@@ -238,5 +268,3 @@ for (i in _____) {
 }
 areas
 ```
-
-
