@@ -1,6 +1,6 @@
 ---
 title: "Impacts of agroforestry practices on the biodiversity of Panamanian birds"
-author: "Alex White"
+author: "Advanced Data Science Field Course at STRI, UCSB-Smithsonian Scholars"
 date: "`r Sys.Date()`"
 output: rmarkdown::github_document
 ---

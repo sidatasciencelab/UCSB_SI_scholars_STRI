@@ -1,7 +1,7 @@
 Impacts of agroforestry practices on the biodiversity of Panamanian
 birds
 ================
-Alex White
+Advanced Data Science Field Course at STRI, UCSB-Smithsonian Scholars
 2023-07-17
 
 ``` r
