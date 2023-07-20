@@ -2,7 +2,7 @@ Impacts of agroforestry practices on the biodiversity of Panamanian
 birds
 ================
 Advanced Data Science Field Course at STRI, UCSB-Smithsonian Scholars
-2023-07-17
+2023-07-20
 
 ``` r
 library(tidyverse)
@@ -468,9 +468,9 @@ following paper:
     [Link to Tobias et
 al. 2022](https://onlinelibrary.wiley.com/doi/full/10.1111/ele.13898)
 
-To get a full picture of the diversity contained in our Panamanian
-coffee dataset, let’s extract trait data from AVONET for the species
-observed in the coffee plantations.
+To get a full picture of the functional diversity contained in our
+Panamanian coffee dataset, let’s extract trait data from AVONET for the
+species observed in the coffee plantations. First read in the data.
 
 ``` r
 avonet <- read.csv("../data/AVONET_ebird.csv", stringsAsFactors = F)
@@ -510,6 +510,34 @@ glimpse(avonet)
     ## $ Trophic.Level      <chr> "Carnivore", "Carnivore", "Carnivore", "Carnivore",…
     ## $ Trophic.Niche      <chr> "Vertivore", "Vertivore", "Vertivore", "Vertivore",…
     ## $ Primary.Lifestyle  <chr> "Insessorial", "Insessorial", "Generalist", "Insess…
+
+There are numerous ways to quantify functional diversity from trait
+measurements. Some methods incorporate only quantitative variables and
+some methods incorporate categorical data like `Habitat` and
+`Trophic.niche` by converting those variables to binomial characters
+`[0,1]`. Many of these methods are rooted in a distance-based approach,
+meaning that a (often euclidean) multidimensional space is computed
+containing all species in the dataset, and diversity is measured as the
+overall space occupied by those species in the multidimensional space.
+This means that computing *functional richness* usually requires a few
+steps.
+
+- What traits are included in the trait space?
+- What is the method for generating the numerical space in which you
+  will
+
+<!-- -->
+
+    for (i in 1:length(point_names)){ #start the for loop
+      
+      sp_rich <- coffee_species %>% # grab our original dataset
+        filter(Point_Name == point_names[i]) %>% # filter the dataset for each point name
+        distinct(SCI_NAME) # select the distinct species names
+      
+      sp[i] <- sp_rich$SCI_NAME) # generate a vector of the species names and provide the length of that vector
+      
+    }
+    sp
 
     [Link to data from Tobias et
 al. 2022](https://figshare.com/s/b990722d72a26b5bfead)
