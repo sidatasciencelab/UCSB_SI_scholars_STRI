@@ -40,7 +40,7 @@ head(coffee_joined)
 ```
 
 ```{r}
-coffee_species <- coffee_joined %>% filter(CATEGORY == "species")
+coffee_species <- coffee_joined %>% filter(CATEGORY == "species") %>% filter(distance_band == "within") %>% filter(!Point_Name == "1-651 Callejón Seco, Los Naranjos, Provincia de Chiriquí, PA (8.818, -82.481)")
 ```
 
 We could also use a more generalized R package `taxize` to standardize the common names to latin species epithets ("genus_species"). We won't develop this method but the beginnings of this approach are shown below.
@@ -69,11 +69,13 @@ length(point_names)
 dim(coffee_species)
 ```
 
-There are 11884 observations in 130 different locations in our dataset. Our goal is to count the number of unique species in each location. One *could* try to just count the unique number of observations per location. Does this reflect the quantity we are trying to estimate?
+There are 5086 observations in 129 different locations in our dataset. Our goal is to count the number of unique species in each location. One *could* try to just count the unique number of observations per location. Does this reflect the quantity we are trying to estimate?
 
 ```{r}
 species_richness <- coffee_species %>% count(Point_Name)
+#species_richness
 ```
+
 
 ### For loops
 
@@ -201,7 +203,9 @@ Tobias, Joseph A., et al. "AVONET: morphological, ecological and geographical da
   publisher={Wiley Online Library}
 }
 ```
-&emsp; &emsp; [Link to Tobias et al. 2022](https://onlinelibrary.wiley.com/doi/full/10.1111/ele.13898)  
+&emsp; &emsp; [Link to Tobias et al. 2022](https://onlinelibrary.wiley.com/doi/full/10.1111/ele.13898)
+
+&emsp; &emsp; [Link to data from Tobias et al. 2022](https://figshare.com/s/b990722d72a26b5bfead) - these data are already in the `/data` directory in the course repo. 
 
 To get a full picture of the functional diversity contained in our Panamanian coffee dataset, let's extract trait data from AVONET for the species observed in the coffee plantations. 
 First read in the data.
@@ -214,24 +218,266 @@ glimpse(avonet)
 There are numerous ways to quantify functional diversity from trait measurements. Some methods incorporate only quantitative variables and some methods incorporate categorical data like `Habitat` and `Trophic.niche` by converting those variables to binomial characters `[0,1]`. Many of these methods are rooted in a distance-based approach, meaning that a (often euclidean) multidimensional space is computed containing all species in the dataset, and diversity is measured as the overall space occupied by those species in the multidimensional space. This means that computing *functional richness* usually requires a few steps. 
 
 * What traits are included in the trait space?
-* What is the method for generating the numerical space in which you will 
+* How will you generate the numerical space to measure distance?
+* How will you measure occupancy and distance within that numerical space?
 
+Ecologists have been investigating these choices and how they influence our understanding of a biological system for decades. Magneville et al. (2022) provide R based methods for computing across many of these choices is their new package `mFD`. 
+
+![](../images/mFD_ecography.png)
+
+While the paper is comprehensive, many R packages are now supplied with a useful [website](https://cmlmagneville.github.io/mFD/). The best way to deploy a new approach like this is to use the website as a "recipe book" so to speak. Let's navigate to the website and compute some functional diversity metrics for our bird surveys. 
+![](../images/mFD.png)
+
+First, we (most likely) need to install the package. Use the `install.packages()` function.
 ```
+# Install stable version of < mFD > from CRAN ----
+install.packages("mFD")
+```
+
+```{r}
+library(mFD)
+```
+
+From the package website:
+
+*To compute functional diversity indices, users need:
+
+* a data frame summarizing species traits (species in rows, traits in columns). The mFD package works with all kind of traits: quantitative, ordinal, nominal, circular, and fuzzy-coded.
+
+* a matrix summarizing species gathering into assemblages (assemblages in rows, species in columns). All assemblages must at least contain one species.
+
+* a data frame summarizing traits category (first column with traits name, second column with traits type, third column with fuzzy name of fuzzy traits - if no fuzzy traits: NA).
+
+For a complete understanding of the functional workflow and the package possibilities, please refer to the [mFD General Workflow](https://cmlmagneville.github.io/mFD/articles/mFD_general_workflow.html)*.
+
+Exercise:
+How do we transform our data from single observations of species in each point (our current `coffee_species` data) into the a matrix of points (or assemblages) in rows and the count of each species in the column? For simplicity, let's just count the species as present or absent using `[0,1]`. Try building a `for` loop, but first start with a matrix of points and species. Fill in the matrix programatically using a loop.
+
+```{r}
+species_names <- coffee_species %>%
+    distinct(SCI_NAME)
+
+coffee_points <- matrix(data = NA, 
+                        nrow = length(point_names), 
+                        ncol = length(species_names$SCI_NAME))
+
+colnames(coffee_points) <- species_names$SCI_NAME
+rownames(coffee_points) <- point_names
+```
+
+We can grab our loop that we used before and modify it for our new objective.
+
+```{r}
 for (i in 1:length(point_names)){ #start the for loop
   
   sp_rich <- coffee_species %>% # grab our original dataset
     filter(Point_Name == point_names[i]) %>% # filter the dataset for each point name
     distinct(SCI_NAME) # select the distinct species names
   
-  sp[i] <- sp_rich$SCI_NAME) # generate a vector of the species names and provide the length of that vector
+  pres_ab <- colnames(coffee_points) %in% sp_rich$SCI_NAME # generate a vector of the species names and provide the length of that vector
   
+  coffee_points[i,] <- as.numeric(pres_ab)
 }
-sp
+```
+
+OK! Now we are moving closer to leveraging the `mFD` package. The final piece is a dataframe telling the package what types of traits we are using. There are many traits to choose from in the AVONET dataset, and therefore many potential ways to view functional richness. Let's choose which functional traits we are going to use for this analysis. 
+
+```{r}
+glimpse(avonet)
+```
+```{r}
+trait_name <- colnames(avonet)[c(10:17,19,20,26,27,29:31)]
+```
+
+Now that we have our traits we need to follow the `mFD` recipe for building our trait type dataframe:
+![](../images/mFD_instructions.png)
+Our data are quantitative, nominal, and in the case of Habitat.density, this seems like an ordinal variable. We can build a `bird_trait_type` dataframe using these two vectors.
+
+```{r}
+trait_type <- c(rep("Q",10),"N","Q",rep("N",3))
+bird_trait_type <- data.frame(trait_name, trait_type)
+```
+
+Finally, we need to filter AVONET to only include the species we need for our analysis. We already have a vector `colnames(coffee_points)` so let's filter AVONET using that vector. 
+
+```{r}
+avonet_coffee <- avonet %>% filter(Species2 %in% colnames(coffee_points))
+length(colnames(coffee_points))
+dim(avonet_coffee)
+```
+
+It seems that we've lost 2 species from our coffee dataset - which species are missing?
+
+```{r}
+colnames(coffee_points)[!colnames(coffee_points) %in% avonet_coffee$Species2]
+```
+
+This is a very common problem when working with these types of data. The taxonomy of all organisms is under constant revision and species names change all the time. Out two missing species are `"Mionectes galbinus"` and `"Daptrius chimachima"`. A quick search reveals other possible species names that may be used in the AVONET dataset `"Mionectes olivaceus"` and `"Milvago chimachima"`. Let's modify our original dataset to reflect these changes.  
+
+```{r}
+colnames(coffee_points)[colnames(coffee_points) == "Mionectes galbinus"] <- "Mionectes olivaceus"
+colnames(coffee_points)[colnames(coffee_points) == "Daptrius chimachima"] <- "Milvago chimachima"
+```
+
+Now re-filter AVONET using the full complement of species names. One snag seems to be that the datasframe requires all strings to be factors, so we rebuild our dataframe using that argument. 
+
+```{r}
+avonet_coffee <- avonet %>% filter(Species2 %in% colnames(coffee_points))
+avonet_coffee <- as.data.frame(unclass(avonet_coffee),
+                               row.names = avonet_coffee$Species2, 
+                               stringsAsFactors = TRUE)
+avonet_coffee <- avonet_coffee %>% select(all_of(trait_name))
+```
+
+Finally we can use mFD! As we noted earlier, there are many things to consider when computing functional richness. From the `mFD` general workflow [vignette](https://cmlmagneville.github.io/mFD/articles/mFD_general_workflow.html#computing-distances-between-species-based-on-functional-traits), we need to compute the distances between species in our functional trait space. From this space, we will compute functional richness of our points.  
+
+![](../images/distances.png)
+```{r}
+sp_dist_birds <- mFD::funct.dist(
+  sp_tr         = avonet_coffee,
+  tr_cat        = bird_trait_type,
+  metric        = "gower",
+  scale_euclid  = "scale_center",
+  ordinal_var   = "classic",
+  weight_type   = "equal",
+  stop_if_NA    = TRUE)
 ```
 
 
+```{r}
+fspaces_quality_birds <- mFD::quality.fspaces(
+  sp_dist             = sp_dist_birds,
+  maxdim_pcoa         = 10,
+  deviation_weighting = "absolute",
+  fdist_scaling       = FALSE,
+  fdendro             = "average")
+```
 
-&emsp; &emsp; [Link to data from Tobias et al. 2022](https://figshare.com/s/b990722d72a26b5bfead) 
+```{r}
+sp_faxes_coord_birds <- fspaces_quality_birds$"details_fspaces"$"sp_pc_coord"
+```
+
+```{r, message=FALSE}
+alpha_fd_indices_birds <- mFD::alpha.fd.multidim(
+  sp_faxes_coord   = sp_faxes_coord_birds[ , c("PC1", "PC2")],
+  asb_sp_w         = coffee_points,
+  ind_vect         = c("fdis", "fmpd", "fnnd", "feve", "fric", "fdiv", "fori", 
+                       "fspe", "fide"),
+  scaling          = TRUE,
+  check_input      = TRUE,
+  details_returned = TRUE)
+```
+
+```{r}
+fd_ind_values_birds <- alpha_fd_indices_birds$"functional_diversity_indices"
+fd_ind_values_birds$point_name <- rownames(fd_ind_values_birds)
+```
+
+
+```{r}
+point_metadata <- left_join(point_metadata, fd_ind_values_birds, by = join_by(Name_Point == point_name))
+glimpse(point_metadata)
+```
+
+### Phylogenetic richness
+
+We have now described our data in two ecologically relevant ways. The first is by species richness, and the second an estimate of how those species represent different ecological units in the community. From a conservation perspective, the species themselves are really representations of ecological function but also evolutionary distinction. Species names don't neccesarily tell us the evolutionary uniqueness of the community, but we can use methods from phylogenetics to assess phylogenetic diversity using evolutionary or phylogenetic trees.
+
+While a number of phylogenetic trees have been published, we will make use of a tree that was recently assembled to make use of the most modern interpretation of 5 previously published trees. Methods to assemble these data into a consensus tree are found [here](http://blog.phytools.org/2016/04/consensus-methods-and-computing-average.html)
+
+&emsp; &emsp; [Link to Lum et al. 2022](https://royalsocietypublishing.org/doi/10.1098/rspb.2022.0088)  
+
+&emsp; &emsp; [Link to data from Lum et al. 2022](https://doi.org/10.6084/m9.figshare.c.5923562.v1)  
+
+As a quick aside, these data come from a paper that sought to summarize the accumulation of phylogenetic diversity over time since Linnaean taxonomy (e.g., genus_species) was introduced 1758. 50% of known PD for birds was already described by ~1828. 
+
+![](../images/lum.png)
+
+Measuring phylogenetic diversity by summing unique branches in each phylogentic tree. 
+
+```{r, messages = F}
+install.packages("phytools")
+library(phytools)
+```
+
+The first problem we have is that the names in our phylogenetic tree are different than the names in our dataset. Each uses a different global bird taxonomy. This is such a common problem that I have never once encountered an analysis where the names matched arcoss global datasets. Luckily, many lists provide a comparison between their names and the names used by others. We will match the species names in our dataset with those in the phylogeny by using a dataset of these comparisons found [here](https://www.worldbirdnames.org/new/ioc-lists/master-list-2/). 
+
+```{r}
+ioc_taxonomy <- read.csv("../data/IOC_13.2_vs_other_lists.csv", stringsAsFactors = F)
+
+ioc_taxonomy <- ioc_taxonomy %>% filter(Rank == "species")
+
+ebird_to_HM_taxonomy <- ioc_taxonomy[,c(6,9)]
+
+ebird_to_HM_taxonomy[ebird_to_HM_taxonomy[,1] == "",1] <- NA
+ebird_to_HM_taxonomy[ebird_to_HM_taxonomy[,2] == "",2] <- NA
+ebird_to_HM_taxonomy <- na.omit(ebird_to_HM_taxonomy)
+
+colnames(ebird_to_HM_taxonomy) <- c("ebird", "hm")
+
+ebird_to_HM_taxonomy$ebird <- sub(" ","_",ebird_to_HM_taxonomy$ebird)
+ebird_to_HM_taxonomy$hm <- sub(" ","_",ebird_to_HM_taxonomy$hm)
+
+species <- sub(" ","_",species_names$SCI_NAME)
+```
+
+
+```{r}
+files <- list.files(path="../data/final_merged_trees", pattern="*.tre", full.names=TRUE, recursive=FALSE)
+phy_birds <- list()
+pd <- c()
+for (i in 1:length(files)){
+  phy_bird_tree <- read.tree(files[[i]])
+  
+  phy_bird_tree$tip.label <- plyr::mapvalues(phy_bird_tree$tip.label,
+                                             from = ebird_to_HM_taxonomy$hm, 
+                                             to = ebird_to_HM_taxonomy$ebird,
+                                             warn_missing = F)
+  
+  phy_bird_tree = bind.tip(phy_bird_tree, "temp_edge", edge.length = 0, position = 0)
+  
+  removals <- phy_bird_tree$tip.label[!phy_bird_tree$tip.label %in% species]
+  
+  phy_birds[[i]] = drop.tip(phy_bird_tree, removals)
+
+}
+
+class(phy_birds) <- "multiPhylo"
+```
+
+```{r}
+#avg_phy_birds <- averageTree(phy_birds, start=NULL, method="quadratic.path.difference")
+
+pd_mat <- matrix(nrow = length(phy_birds), 
+                 ncol = length(point_names))
+
+for (i in 1:length(point_names)){ #start the for loop
+  
+  tips <- coffee_species %>% # grab our original dataset
+    filter(Point_Name == point_names[i]) %>% # filter the dataset for each point name
+    distinct(SCI_NAME)
+  
+  tips <- sub(" ","_",tips$SCI_NAME)
+  
+  branch_length <- c()             
+  for (z in 1:length(phy_birds)){
+    
+      removals <- phy_birds[[i]]$tip.label[!phy_birds[[i]]$tip.label %in% tips]
+      
+      loca_phy = drop.tip(phy_birds[[i]], removals)
+      
+      branch_length[z] <- sum(loca_phy$edge.length)
+  }
+  pd_mat[,i] <- branch_length
+  
+  #print(i)
+}
+```
+
+```{r}
+mean_pd <- apply(pd_mat, 2, mean)
+```
+
 
 
 # Appendix

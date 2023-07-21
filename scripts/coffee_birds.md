@@ -2,7 +2,7 @@ Impacts of agroforestry practices on the biodiversity of Panamanian
 birds
 ================
 Advanced Data Science Field Course at STRI, UCSB-Smithsonian Scholars
-2023-07-20
+2023-07-21
 
 ``` r
 library(tidyverse)
@@ -95,7 +95,7 @@ head(coffee_joined)
     ## 6
 
 ``` r
-coffee_species <- coffee_joined %>% filter(CATEGORY == "species")
+coffee_species <- coffee_joined %>% filter(CATEGORY == "species") %>% filter(distance_band == "within")
 ```
 
 We could also use a more generalized R package `taxize` to standardize
@@ -167,7 +167,7 @@ length(point_names)
 dim(coffee_species)
 ```
 
-    ## [1] 11884    17
+    ## [1] 5087   17
 
 There are 11884 observations in 130 different locations in our dataset.
 Our goal is to count the number of unique species in each location. One
@@ -273,12 +273,12 @@ for (i in 1:length(point_names)){ #start the for loop
 sp  # print the value of species richness
 ```
 
-    ##   [1] 37 33 35 23 61 38 48 18 31 29 47 44 26 32 24 36 39 33 46 30 43 34 31 25 27
-    ##  [26] 19 22 31 33 27 33 29 25 28 41 51 42 62 36 53 44 39 40 46 39 35 48 52 31 53
-    ##  [51] 41 30 30 37 43 39 47 39 36 38 43 38 29 42 35 32 23 45 25 22 30 24 28 31 30
-    ##  [76] 45 48 43 27 37 34 42 39 38 34 30 32 41 47 46 36 32 44 39 35 32 39 27 34 38
-    ## [101] 28 39 21 21 32 38 29 55 44 55 48 39 33 38 53 28 45 39 40 49 49 17 26 38 27
-    ## [126] 34 40 32 34  2
+    ##   [1] 28 22 26  7 45 24 27 11 15 17 24 19 15 23 14 24 26 20 28 10 19 16 17  9 15
+    ##  [26]  3 14 11  4  6 25 16 20 20 26 21 27 43 11 38 24 16 32 20 20 12 28 31 14 21
+    ##  [51] 20 19 11 18 19 15 26 19 17 19 30 25 19 19 20 20 11 31 19 14 23 14 18 23 13
+    ##  [76] 25 28 20 20 23 19 31 26 24 21 23 17 29 29 26 26 21 35 24 21 18 26 19 29 26
+    ## [101] 19 29 15 12 15 31  8 26 22 36 27 28 20 25 39 16 26 24 27 29 38 14 23 27 20
+    ## [126] 24 24 27 21  1
 
 Now that we’ve built the loop and saved the output, we need to combine
 these data with our original dataset to pair the calculated metric `sp`
@@ -331,12 +331,12 @@ head(sp_richness)
 ```
 
     ##   sp point_names
-    ## 1 37     PaBHF05
-    ## 2 33     PaBHF08
-    ## 3 35     PaBHF06
-    ## 4 23    PaBLSC03
-    ## 5 61    PaBLSh03
-    ## 6 38    PaBLSh02
+    ## 1 28     PaBHF05
+    ## 2 22     PaBHF08
+    ## 3 26     PaBHF06
+    ## 4  7    PaBLSC03
+    ## 5 45    PaBLSh03
+    ## 6 24    PaBLSh02
 
 Now we can use `left_join()` with the `point_metadata` table to
 aggregate our metadata in a single table:
@@ -368,12 +368,12 @@ head(point_metadata)
     ## 5                14.0                1.0000         3.000000
     ## 6                 0.0                0.0000         0.000000
     ##   Average_canopy_density SE_canopy_density sp
-    ## 1                  91.29              3.90 18
-    ## 2                  88.38              2.72 35
-    ## 3                  28.32             31.94 41
-    ## 4                   8.22             16.89 32
-    ## 5                  14.54             21.06 30
-    ## 6                   0.16              0.00 34
+    ## 1                  91.29              3.90 11
+    ## 2                  88.38              2.72 26
+    ## 3                  28.32             31.94 29
+    ## 4                   8.22             16.89 17
+    ## 5                  14.54             21.06 23
+    ## 6                   0.16              0.00 21
 
 Voila! Now we can easily use the `point_metadata` table to analyze and
 visualize the relationships between the various metrics we are
@@ -523,83 +523,104 @@ This means that computing *functional richness* usually requires a few
 steps.
 
 - What traits are included in the trait space?
-- What is the method for generating the numerical space in which you
-  will
+- How will you generate the numerical space to measure distance?
+- How will you measure occupancy and distance within that numerical
+  space?
 
-<!-- -->
+Ecologists have been investigating these choices and how they influence
+our understanding of a biological system for decades. Magneville et
+al. (2022) provide R based methods for computing across many of these
+choices is their new package `mFD`.
 
-    for (i in 1:length(point_names)){ #start the for loop
-      
-      sp_rich <- coffee_species %>% # grab our original dataset
-        filter(Point_Name == point_names[i]) %>% # filter the dataset for each point name
-        distinct(SCI_NAME) # select the distinct species names
-      
-      sp[i] <- sp_rich$SCI_NAME) # generate a vector of the species names and provide the length of that vector
-      
-    }
-    sp
+![](../images/mFD_ecography.png)
 
-    [Link to data from Tobias et
-al. 2022](https://figshare.com/s/b990722d72a26b5bfead)
+While the paper is comprehensive, many R packages are now supplied with
+a useful [website](https://cmlmagneville.github.io/mFD/). The best way
+to deploy a new approach like this is to use the website as a “recipe
+book” so to speak. Let’s navigate to the website and compute some
+functional diversity metrics for our bird surveys.
+![](../images/mFD.png)
 
-# Appendix
+First, we (most likely) need to install the package. Use the
+`install.packages()` function.
 
-Exercises from
-<https://datacarpentry.org/semester-biology/exercises/Loops-basic-for-loops-R/>
+    # Install stable version of < mFD > from CRAN ----
+    install.packages("mFD")
 
-## Basic For Loops (Loops)
+``` r
+library(mFD)
+```
 
-Exercises from
-<https://datacarpentry.org/semester-biology/exercises/Loops-basic-for-loops-R/>
+From the package website:
 
-1.  The code below prints the numbers 1 through 5 one line at a time.
-    Modify it to print each of these numbers multiplied by 3.
+\*To compute functional diversity indices, users need:
 
-<!-- -->
+- a data frame summarizing species traits (species in rows, traits in
+  columns). The mFD package works with all kind of traits: quantitative,
+  ordinal, nominal, circular, and fuzzy-coded.
 
-    numbers <- c(1, 2, 3, 4, 5)
-    for (number in numbers){
-      print(number)
-    }
+- a matrix summarizing species gathering into assemblages (assemblages
+  in rows, species in columns). All assemblages must at least contain
+  one species.
 
-2.  Write a for loop that loops over the following vector and prints out
-    the mass in kilograms (mass_kg = 2.2 \* mass_lb)
+- a data frame summarizing traits category (first column with traits
+  name, second column with traits type, third column with fuzzy name of
+  fuzzy traits - if no fuzzy traits: NA).
 
-<!-- -->
+For a complete understanding of the functional workflow and the package
+possibilities, please refer to the [mFD General
+Workflow](https://cmlmagneville.github.io/mFD/articles/mFD_general_workflow.html)\*.
 
-    mass_lbs <- c(2.2, 3.5, 9.6, 1.2)
+for (i in 1:length(point_names)){ \#start the for loop
 
-3.  Complete the code below so that it prints out the name of each bird
-    one line at a time.
+sp_rich \<- coffee_species %\>% \# grab our original dataset
+filter(Point_Name == point_names\[i\]) %\>% \# filter the dataset for
+each point name distinct(SCI_NAME) \# select the distinct species names
 
-<!-- -->
+sp\[i\] \<- sp_rich\$SCI_NAME) \# generate a vector of the species names
+and provide the length of that vector
 
-    birds = c('robin', 'woodpecker', 'blue jay', 'sparrow')
-    for (i in 1:length(_________)){
-      print(birds[__])
-    }
+} sp
 
-4.  Complete the code below so that it stores one area for each radius.
 
-<!-- -->
 
-    radius <- c(1.3, 2.1, 3.5)
-    areas <- vector(_____ = "numeric", length = ______)
-    for (__ in 1:length(________)){
-      areas[__] <- pi * radius[i] ^ 2
-    }
-    areas
 
-5.  Complete the code below to calculate an area for each pair of
-    lengths and widths, store the areas in a vector, and after they are
-    all calculated print them out:
+    &emsp; &emsp; [Link to data from Tobias et al. 2022](https://figshare.com/s/b990722d72a26b5bfead) 
 
-<!-- -->
 
-    lengths = c(1.1, 2.2, 1.6)
-    widths = c(3.5, 2.4, 2.8)
-    areas <- vector(length = __________)
-    for (i in _____) {
-      areas[__] <- lengths[__] * widths[__]
-    }
-    areas
+    # Appendix
+
+    Exercises from <https://datacarpentry.org/semester-biology/exercises/Loops-basic-for-loops-R/>
+
+    ## Basic For Loops (Loops)
+
+    Exercises from <https://datacarpentry.org/semester-biology/exercises/Loops-basic-for-loops-R/>
+
+    1.  The code below prints the numbers 1 through 5 one line at a time. Modify it to print each of these numbers multiplied by 3.
+
+numbers \<- c(1, 2, 3, 4, 5) for (number in numbers){ print(number) }
+
+
+    2.  Write a for loop that loops over the following vector and prints out the mass in kilograms (mass_kg = 2.2 \* mass_lb)
+
+mass_lbs \<- c(2.2, 3.5, 9.6, 1.2)
+
+
+    3.  Complete the code below so that it prints out the name of each bird one line at a time.
+
+birds = c(‘robin’, ‘woodpecker’, ‘blue jay’, ‘sparrow’) for (i in
+1:length(\_\_\_\_\_\_\_\_\_)){ print(birds\[\_\_\]) }
+
+
+    4.  Complete the code below so that it stores one area for each radius.
+
+radius \<- c(1.3, 2.1, 3.5) areas \<- vector(\_\_\_\_\_ = “numeric”,
+length = \_\_\_\_\_\_) for (\_\_ in 1:length(\_\_\_\_\_\_\_\_)){
+areas\[\_\_\] \<- pi \* radius\[i\] ^ 2 } areas
+
+
+    5.  Complete the code below to calculate an area for each pair of lengths and widths, store the areas in a vector, and after they are all calculated print them out:
+
+lengths = c(1.1, 2.2, 1.6) widths = c(3.5, 2.4, 2.8) areas \<-
+vector(length = \_\_\_\_\_\_\_\_\_\_) for (i in \_\_\_\_\_) {
+areas\[\_\_\] \<- lengths\[\_\_\] \* widths\[\_\_\] } areas \`\`\`
