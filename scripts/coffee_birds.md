@@ -95,7 +95,7 @@ head(coffee_joined)
     ## 6
 
 ``` r
-coffee_species <- coffee_joined %>% filter(CATEGORY == "species") %>% filter(distance_band == "within")
+coffee_species <- coffee_joined %>% filter(CATEGORY == "species") %>% filter(distance_band == "within") %>% filter(!Point_Name == "1-651 Callejón Seco, Los Naranjos, Provincia de Chiriquí, PA (8.818, -82.481)")
 ```
 
 We could also use a more generalized R package `taxize` to standardize
@@ -161,21 +161,22 @@ point_names <- as.vector(point_names$Point_Name)
 length(point_names)
 ```
 
-    ## [1] 130
+    ## [1] 129
 
 ``` r
 dim(coffee_species)
 ```
 
-    ## [1] 5087   17
+    ## [1] 5086   17
 
-There are 11884 observations in 130 different locations in our dataset.
+There are 5086 observations in 129 different locations in our dataset.
 Our goal is to count the number of unique species in each location. One
 *could* try to just count the unique number of observations per
 location. Does this reflect the quantity we are trying to estimate?
 
 ``` r
 species_richness <- coffee_species %>% count(Point_Name)
+#species_richness
 ```
 
 ### For loops
@@ -278,7 +279,7 @@ sp  # print the value of species richness
     ##  [51] 20 19 11 18 19 15 26 19 17 19 30 25 19 19 20 20 11 31 19 14 23 14 18 23 13
     ##  [76] 25 28 20 20 23 19 31 26 24 21 23 17 29 29 26 26 21 35 24 21 18 26 19 29 26
     ## [101] 19 29 15 12 15 31  8 26 22 36 27 28 20 25 39 16 26 24 27 29 38 14 23 27 20
-    ## [126] 24 24 27 21  1
+    ## [126] 24 24 27 21
 
 Now that we’ve built the loop and saved the output, we need to combine
 these data with our original dataset to pair the calculated metric `sp`
@@ -468,6 +469,10 @@ following paper:
     [Link to Tobias et
 al. 2022](https://onlinelibrary.wiley.com/doi/full/10.1111/ele.13898)
 
+    [Link to data from Tobias et
+al. 2022](https://figshare.com/s/b990722d72a26b5bfead) - these data are
+already in the `/data` directory in the course repo.
+
 To get a full picture of the functional diversity contained in our
 Panamanian coffee dataset, let’s extract trait data from AVONET for the
 species observed in the coffee plantations. First read in the data.
@@ -571,56 +576,441 @@ For a complete understanding of the functional workflow and the package
 possibilities, please refer to the [mFD General
 Workflow](https://cmlmagneville.github.io/mFD/articles/mFD_general_workflow.html)\*.
 
-for (i in 1:length(point_names)){ \#start the for loop
+Exercise: How do we transform our data from single observations of
+species in each point (our current `coffee_species` data) into the a
+matrix of points (or assemblages) in rows and the count of each species
+in the column? For simplicity, let’s just count the species as present
+or absent using `[0,1]`. Try building a `for` loop, but first start with
+a matrix of points and species. Fill in the matrix programatically using
+a loop.
 
-sp_rich \<- coffee_species %\>% \# grab our original dataset
-filter(Point_Name == point_names\[i\]) %\>% \# filter the dataset for
-each point name distinct(SCI_NAME) \# select the distinct species names
+``` r
+species_names <- coffee_species %>%
+    distinct(SCI_NAME)
 
-sp\[i\] \<- sp_rich\$SCI_NAME) \# generate a vector of the species names
-and provide the length of that vector
+coffee_points <- matrix(data = NA, 
+                        nrow = length(point_names), 
+                        ncol = length(species_names$SCI_NAME))
 
-} sp
+colnames(coffee_points) <- species_names$SCI_NAME
+rownames(coffee_points) <- point_names
+```
 
+We can grab our loop that we used before and modify it for our new
+objective.
 
+``` r
+for (i in 1:length(point_names)){ #start the for loop
+  
+  sp_rich <- coffee_species %>% # grab our original dataset
+    filter(Point_Name == point_names[i]) %>% # filter the dataset for each point name
+    distinct(SCI_NAME) # select the distinct species names
+  
+  pres_ab <- colnames(coffee_points) %in% sp_rich$SCI_NAME # generate a vector of the species names and provide the length of that vector
+  
+  coffee_points[i,] <- as.numeric(pres_ab)
+}
+```
 
+OK! Now we are moving closer to leveraging the `mFD` package. The final
+piece is a dataframe telling the package what types of traits we are
+using. There are many traits to choose from in the AVONET dataset, and
+therefore many potential ways to view functional richness. Let’s choose
+which functional traits we are going to use for this analysis.
 
-    &emsp; &emsp; [Link to data from Tobias et al. 2022](https://figshare.com/s/b990722d72a26b5bfead) 
+``` r
+glimpse(avonet)
+```
 
+    ## Rows: 10,661
+    ## Columns: 31
+    ## $ Species2           <chr> "Accipiter albogularis", "Accipiter badius", "Accip…
+    ## $ Family2            <chr> "Accipitridae", "Accipitridae", "Accipitridae", "Ac…
+    ## $ Order2             <chr> "Accipitriformes", "Accipitriformes", "Accipitrifor…
+    ## $ Avibase.ID2        <chr> "AVIBASE-BBB59880", "AVIBASE-1A0ECB6E", "AVIBASE-AD…
+    ## $ Total.individuals  <int> 5, 10, 11, 4, 8, 1, 6, 5, 7, 5, 4, 5, 11, 10, 8, 4,…
+    ## $ Female             <int> 2, 4, 4, 4, 4, 0, 2, 2, 1, 2, 3, 2, 8, 2, 4, 3, 0, …
+    ## $ Male               <int> 0, 6, 5, 0, 4, 1, 2, 3, 5, 3, 1, 3, 3, 8, 4, 1, 4, …
+    ## $ Unknown            <int> 3, 0, 2, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, …
+    ## $ Complete.measures  <dbl> 4, 8, 8, 3, 4, 1, 4, 4, 6, 4, 4, 4, 9, 9, 4, 3, 4, …
+    ## $ Beak.Length_Culmen <dbl> 27.7, 20.6, 25.0, 22.5, 21.1, 20.0, 20.5, 19.2, 20.…
+    ## $ Beak.Length_Nares  <dbl> 17.8, 12.1, 13.7, 14.0, 12.1, 11.9, 11.5, 10.6, 11.…
+    ## $ Beak.Width         <dbl> 10.6, 8.8, 8.6, 8.9, 8.7, 6.6, 8.3, 7.7, 8.6, 8.6, …
+    ## $ Beak.Depth         <dbl> 14.7, 11.6, 12.7, 11.9, 11.1, 12.0, 10.9, 9.6, 11.0…
+    ## $ Tarsus.Length      <dbl> 62.0, 43.0, 58.1, 61.2, 46.4, 48.7, 52.6, 60.3, 43.…
+    ## $ Wing.Length        <dbl> 235.2, 186.7, 229.6, 202.2, 217.6, 166.0, 163.5, 21…
+    ## $ Kipps.Distance     <dbl> 81.8, 62.5, 56.6, 64.1, 87.8, 42.9, 38.9, 81.3, 49.…
+    ## $ Secondary1         <dbl> 159.5, 127.4, 174.8, 138.1, 129.9, 123.1, 123.1, 13…
+    ## $ Hand.Wing.Index    <dbl> 33.9, 32.9, 24.6, 31.7, 40.2, 25.8, 24.0, 37.8, 30.…
+    ## $ Tail.Length        <dbl> 169.0, 140.6, 186.3, 140.8, 153.5, 127.0, 135.4, 15…
+    ## $ Mass               <dbl> 248.8, 131.2, 287.5, 142.0, 186.5, 122.0, 157.5, 16…
+    ## $ Mass.Source        <chr> "Dunning", "Dunning", "Dunning", "Dunning", "Dunnin…
+    ## $ Mass.Refs.Other    <chr> NA, NA, NA, NA, NA, "Dunning (2021)", NA, NA, "BoW"…
+    ## $ Inference          <chr> "NO", "NO", "NO", "NO", "NO", "NO", "NO", "NO", "NO…
+    ## $ Traits.inferred    <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+    ## $ Reference.species  <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+    ## $ Habitat            <chr> "Forest", "Shrubland", "Woodland", "Forest", "Fores…
+    ## $ Habitat.Density    <int> 1, 2, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, …
+    ## $ Migration          <int> 2, 3, 2, 2, 3, 1, 2, 2, 2, 3, 1, 1, 1, 1, 2, 1, 3, …
+    ## $ Trophic.Level      <chr> "Carnivore", "Carnivore", "Carnivore", "Carnivore",…
+    ## $ Trophic.Niche      <chr> "Vertivore", "Vertivore", "Vertivore", "Vertivore",…
+    ## $ Primary.Lifestyle  <chr> "Insessorial", "Insessorial", "Generalist", "Insess…
 
-    # Appendix
+``` r
+trait_name <- colnames(avonet)[c(10:17,19,20,26,27,29:31)]
+```
 
-    Exercises from <https://datacarpentry.org/semester-biology/exercises/Loops-basic-for-loops-R/>
+Now that we have our traits we need to follow the `mFD` recipe for
+building our trait type dataframe: ![](../images/mFD_instructions.png)
+Our data are quantitative, nominal, and in the case of Habitat.density,
+this seems like an ordinal variable. We can build a `bird_trait_type`
+dataframe using these two vectors.
 
-    ## Basic For Loops (Loops)
+``` r
+trait_type <- c(rep("Q",10),"N","Q",rep("N",3))
+bird_trait_type <- data.frame(trait_name, trait_type)
+```
 
-    Exercises from <https://datacarpentry.org/semester-biology/exercises/Loops-basic-for-loops-R/>
+Finally, we need to filter AVONET to only include the species we need
+for our analysis. We already have a vector `colnames(coffee_points)` so
+let’s filter AVONET using that vector.
 
-    1.  The code below prints the numbers 1 through 5 one line at a time. Modify it to print each of these numbers multiplied by 3.
+``` r
+avonet_coffee <- avonet %>% filter(Species2 %in% colnames(coffee_points))
+length(colnames(coffee_points))
+```
 
-numbers \<- c(1, 2, 3, 4, 5) for (number in numbers){ print(number) }
+    ## [1] 231
 
+``` r
+dim(avonet_coffee)
+```
 
-    2.  Write a for loop that loops over the following vector and prints out the mass in kilograms (mass_kg = 2.2 \* mass_lb)
+    ## [1] 229  31
 
-mass_lbs \<- c(2.2, 3.5, 9.6, 1.2)
+It seems that we’ve lost 2 species from our coffee dataset - which
+species are missing?
 
+``` r
+colnames(coffee_points)[!colnames(coffee_points) %in% avonet_coffee$Species2]
+```
 
-    3.  Complete the code below so that it prints out the name of each bird one line at a time.
+    ## [1] "Mionectes galbinus"  "Daptrius chimachima"
 
-birds = c(‘robin’, ‘woodpecker’, ‘blue jay’, ‘sparrow’) for (i in
-1:length(\_\_\_\_\_\_\_\_\_)){ print(birds\[\_\_\]) }
+This is a very common problem when working with these types of data. The
+taxonomy of all organisms is under constant revision and species names
+change all the time. Out two missing species are `"Mionectes galbinus"`
+and `"Daptrius chimachima"`. A quick search reveals other possible
+species names that may be used in the AVONET dataset
+`"Mionectes olivaceus"` and `"Milvago chimachima"`. Let’s modify our
+original dataset to reflect these changes.
 
+``` r
+colnames(coffee_points)[colnames(coffee_points) == "Mionectes galbinus"] <- "Mionectes olivaceus"
+colnames(coffee_points)[colnames(coffee_points) == "Daptrius chimachima"] <- "Milvago chimachima"
+```
 
-    4.  Complete the code below so that it stores one area for each radius.
+Now re-filter AVONET using the full complement of species names. One
+snag seems to be that the datasframe requires all strings to be factors,
+so we rebuild our dataframe using that argument.
 
-radius \<- c(1.3, 2.1, 3.5) areas \<- vector(\_\_\_\_\_ = “numeric”,
-length = \_\_\_\_\_\_) for (\_\_ in 1:length(\_\_\_\_\_\_\_\_)){
-areas\[\_\_\] \<- pi \* radius\[i\] ^ 2 } areas
+``` r
+avonet_coffee <- avonet %>% filter(Species2 %in% colnames(coffee_points))
+avonet_coffee <- as.data.frame(unclass(avonet_coffee),
+                               row.names = avonet_coffee$Species2, 
+                               stringsAsFactors = TRUE)
+avonet_coffee <- avonet_coffee %>% select(all_of(trait_name))
+```
 
+Finally we can use mFD! As we noted earlier, there are many things to
+consider when computing functional richness. From the `mFD` general
+workflow
+[vignette](https://cmlmagneville.github.io/mFD/articles/mFD_general_workflow.html#computing-distances-between-species-based-on-functional-traits),
+we need to compute the distances between species in our functional trait
+space. From this space, we will compute functional richness of our
+points.
 
-    5.  Complete the code below to calculate an area for each pair of lengths and widths, store the areas in a vector, and after they are all calculated print them out:
+![](../images/distances.png)
 
-lengths = c(1.1, 2.2, 1.6) widths = c(3.5, 2.4, 2.8) areas \<-
-vector(length = \_\_\_\_\_\_\_\_\_\_) for (i in \_\_\_\_\_) {
-areas\[\_\_\] \<- lengths\[\_\_\] \* widths\[\_\_\] } areas \`\`\`
+``` r
+sp_dist_birds <- mFD::funct.dist(
+  sp_tr         = avonet_coffee,
+  tr_cat        = bird_trait_type,
+  metric        = "gower",
+  scale_euclid  = "scale_center",
+  ordinal_var   = "classic",
+  weight_type   = "equal",
+  stop_if_NA    = TRUE)
+```
+
+``` r
+fspaces_quality_birds <- mFD::quality.fspaces(
+  sp_dist             = sp_dist_birds,
+  maxdim_pcoa         = 10,
+  deviation_weighting = "absolute",
+  fdist_scaling       = FALSE,
+  fdendro             = "average")
+```
+
+    ## Registered S3 method overwritten by 'dendextend':
+    ##   method     from 
+    ##   rev.hclust vegan
+
+``` r
+sp_faxes_coord_birds <- fspaces_quality_birds$"details_fspaces"$"sp_pc_coord"
+```
+
+``` r
+alpha_fd_indices_birds <- mFD::alpha.fd.multidim(
+  sp_faxes_coord   = sp_faxes_coord_birds[ , c("PC1", "PC2")],
+  asb_sp_w         = coffee_points,
+  ind_vect         = c("fdis", "fmpd", "fnnd", "feve", "fric", "fdiv", "fori", 
+                       "fspe", "fide"),
+  scaling          = TRUE,
+  check_input      = TRUE,
+  details_returned = TRUE)
+```
+
+``` r
+fd_ind_values_birds <- alpha_fd_indices_birds$"functional_diversity_indices"
+fd_ind_values_birds$point_name <- rownames(fd_ind_values_birds)
+```
+
+``` r
+point_metadata <- left_join(point_metadata, fd_ind_values_birds, by = join_by(Name_Point == point_name))
+glimpse(point_metadata)
+```
+
+    ## Rows: 997
+    ## Columns: 27
+    ## $ Name_Point              <chr> "PaBHF07", "PaBHF06", "PaBHSC01", "PaBHSC02", …
+    ## $ Latitude                <dbl> 8.805410, 8.807901, 8.824319, 8.822304, 8.8200…
+    ## $ Longitud                <dbl> -82.38800, -82.39425, -82.45733, -82.45616, -8…
+    ## $ Habitat                 <chr> "Forest", "Forest", "Sun", "Sun", "Sun", "Sun"…
+    ## $ Elevation               <int> 2013, 1750, 1574, 1519, 1497, 1458, 1732, 1609…
+    ## $ Slope                   <dbl> 100.0, 97.5, 91.5, 100.5, 88.0, 88.5, 106.0, 9…
+    ## $ Distance.to.Edge        <chr> "40", "40", "50", "40", "50", "50", "100", "60…
+    ## $ Number_tree_species     <int> 8, 9, 4, 2, 7, 0, 10, 9, 5, 3, 5, 3, 3, 3, 2, …
+    ## $ Tree_basal_area         <int> 50, 25, 2, 4, 3, 2, 51, 75, 3, 2, 2, 15, 2, 6,…
+    ## $ Number_tree_individuals <int> 28, 10, 6, 0, 8, 0, 15, 9, 3, 14, 11, 4, 10, 4…
+    ## $ Height_tallest_tree     <dbl> 18.0, 23.5, 14.0, 18.0, 14.0, 0.0, 23.0, 29.5,…
+    ## $ Average_Canopy_Height   <dbl> 10.437500, 15.750000, 2.600000, 0.000000, 1.00…
+    ## $ SE_canopy_height        <dbl> 2.871504, 1.322876, 4.241331, 0.000000, 3.0000…
+    ## $ Average_canopy_density  <dbl> 91.29, 88.38, 28.32, 8.22, 14.54, 0.16, 83.49,…
+    ## $ SE_canopy_density       <dbl> 3.90, 2.72, 31.94, 16.89, 21.06, 0.00, 5.16, 3…
+    ## $ sp                      <dbl> 11, 26, 29, 17, 23, 21, 22, 28, 19, 29, 18, 13…
+    ## $ sp_richn                <dbl> 11, 26, 29, 17, 23, 21, 22, 28, 19, 29, 18, 13…
+    ## $ fdis                    <dbl> 0.3207548, 0.2738122, 0.3151912, 0.2776704, 0.…
+    ## $ fmpd                    <dbl> 0.2924386, 0.2275397, 0.2775328, 0.2519361, 0.…
+    ## $ fnnd                    <dbl> 0.23253838, 0.12218594, 0.14669359, 0.18901822…
+    ## $ feve                    <dbl> 0.578803, 0.539716, 0.687035, 0.759605, 0.6989…
+    ## $ fric                    <dbl> 0.25538461, 0.24180153, 0.30443761, 0.18904734…
+    ## $ fdiv                    <dbl> 0.7443045, 0.7759855, 0.6923737, 0.7109895, 0.…
+    ## $ fori                    <dbl> 0.02777623, 0.03697858, 0.05386145, 0.05040421…
+    ## $ fspe                    <dbl> 0.2177709, 0.1933580, 0.2212460, 0.1853558, 0.…
+    ## $ fide_PC1                <dbl> -0.004322511, -0.008187404, 0.044747323, 0.027…
+    ## $ fide_PC2                <dbl> 0.021460062, 0.025793707, 0.020780864, 0.02219…
+
+### Phylogenetic richness
+
+We have now described our data in two ecologically relevant ways. The
+first is by species richness, and the second an estimate of how those
+species represent different ecological units in the community. From a
+conservation perspective, the species themselves are really
+representations of ecological function but also evolutionary
+distinction. Species names don’t neccesarily tell us the evolutionary
+uniqueness of the community, but we can use methods from phylogenetics
+to assess phylogenetic diversity using evolutionary or phylogenetic
+trees.
+
+While a number of phylogenetic trees have been published, we will make
+use of a tree that was recently assembled to make use of the most modern
+interpretation of 5 previously published trees. Methods to assemble
+these data into a consensus tree are found
+[here](http://blog.phytools.org/2016/04/consensus-methods-and-computing-average.html)
+
+    [Link to Lum et
+al. 2022](https://royalsocietypublishing.org/doi/10.1098/rspb.2022.0088)
+
+    [Link to data from Lum et
+al. 2022](https://doi.org/10.6084/m9.figshare.c.5923562.v1)
+
+As a quick aside, these data come from a paper that sought to summarize
+the accumulation of phylogenetic diversity over time since Linnaean
+taxonomy (e.g., genus_species) was introduced 1758. 50% of known PD for
+birds was already described by ~1828.
+
+![](../images/lum.png)
+
+Measuring phylogenetic diversity by summing unique branches in each
+phylogentic tree.
+
+``` r
+#install.packages("phytools")
+library(phytools)
+```
+
+    ## Loading required package: ape
+
+    ## 
+    ## Attaching package: 'ape'
+
+    ## The following object is masked from 'package:dplyr':
+    ## 
+    ##     where
+
+    ## Loading required package: maps
+
+    ## 
+    ## Attaching package: 'maps'
+
+    ## The following object is masked from 'package:purrr':
+    ## 
+    ##     map
+
+The first problem we have is that the names in our phylogenetic tree are
+different than the names in our dataset. Each uses a different global
+bird taxonomy. This is such a common problem that I have never once
+encountered an analysis where the names matched arcoss global datasets.
+Luckily, many lists provide a comparison between their names and the
+names used by others. We will match the species names in our dataset
+with those in the phylogeny by using a dataset of these comparisons
+found
+[here](https://www.worldbirdnames.org/new/ioc-lists/master-list-2/).
+
+``` r
+ioc_taxonomy <- read.csv("../data/IOC_13.2_vs_other_lists.csv", stringsAsFactors = F)
+
+ioc_taxonomy <- ioc_taxonomy %>% filter(Rank == "species")
+
+ebird_to_HM_taxonomy <- ioc_taxonomy[,c(6,9)]
+
+ebird_to_HM_taxonomy[ebird_to_HM_taxonomy[,1] == "",1] <- NA
+ebird_to_HM_taxonomy[ebird_to_HM_taxonomy[,2] == "",2] <- NA
+ebird_to_HM_taxonomy <- na.omit(ebird_to_HM_taxonomy)
+
+colnames(ebird_to_HM_taxonomy) <- c("ebird", "hm")
+
+ebird_to_HM_taxonomy$ebird <- sub(" ","_",ebird_to_HM_taxonomy$ebird)
+ebird_to_HM_taxonomy$hm <- sub(" ","_",ebird_to_HM_taxonomy$hm)
+
+species <- sub(" ","_",species_names$SCI_NAME)
+```
+
+``` r
+files <- list.files(path="../data/final_merged_trees", pattern="*.tre", full.names=TRUE, recursive=FALSE)
+phy_birds <- list()
+pd <- c()
+for (i in 1:length(files)){
+  phy_bird_tree <- read.tree(files[[i]])
+  
+  phy_bird_tree$tip.label <- plyr::mapvalues(phy_bird_tree$tip.label,
+                                             from = ebird_to_HM_taxonomy$hm, 
+                                             to = ebird_to_HM_taxonomy$ebird,
+                                             warn_missing = F)
+  
+  phy_bird_tree = bind.tip(phy_bird_tree, "temp_edge", edge.length = 0, position = 0)
+  
+  removals <- phy_bird_tree$tip.label[!phy_bird_tree$tip.label %in% species]
+  
+  phy_birds[[i]] = drop.tip(phy_bird_tree, removals)
+
+}
+
+class(phy_birds) <- "multiPhylo"
+```
+
+``` r
+#avg_phy_birds <- averageTree(phy_birds, start=NULL, method="quadratic.path.difference")
+
+pd_mat <- matrix(nrow = length(phy_birds), 
+                 ncol = length(point_names))
+
+for (i in 1:length(point_names)){ #start the for loop
+  
+  tips <- coffee_species %>% # grab our original dataset
+    filter(Point_Name == point_names[i]) %>% # filter the dataset for each point name
+    distinct(SCI_NAME)
+  
+  tips <- sub(" ","_",tips$SCI_NAME)
+  
+  branch_length <- c()             
+  for (z in 1:length(phy_birds)){
+    
+      removals <- phy_birds[[i]]$tip.label[!phy_birds[[i]]$tip.label %in% tips]
+      
+      loca_phy = drop.tip(phy_birds[[i]], removals)
+      
+      branch_length[z] <- sum(loca_phy$edge.length)
+  }
+  pd_mat[,i] <- branch_length
+  
+  #print(i)
+}
+```
+
+``` r
+mean_pd <- apply(pd_mat, 2, mean)
+```
+
+# Appendix
+
+Exercises from
+<https://datacarpentry.org/semester-biology/exercises/Loops-basic-for-loops-R/>
+
+## Basic For Loops (Loops)
+
+Exercises from
+<https://datacarpentry.org/semester-biology/exercises/Loops-basic-for-loops-R/>
+
+1.  The code below prints the numbers 1 through 5 one line at a time.
+    Modify it to print each of these numbers multiplied by 3.
+
+<!-- -->
+
+    numbers <- c(1, 2, 3, 4, 5)
+    for (number in numbers){
+      print(number)
+    }
+
+2.  Write a for loop that loops over the following vector and prints out
+    the mass in kilograms (mass_kg = 2.2 \* mass_lb)
+
+<!-- -->
+
+    mass_lbs <- c(2.2, 3.5, 9.6, 1.2)
+
+3.  Complete the code below so that it prints out the name of each bird
+    one line at a time.
+
+<!-- -->
+
+    birds = c('robin', 'woodpecker', 'blue jay', 'sparrow')
+    for (i in 1:length(_________)){
+      print(birds[__])
+    }
+
+4.  Complete the code below so that it stores one area for each radius.
+
+<!-- -->
+
+    radius <- c(1.3, 2.1, 3.5)
+    areas <- vector(_____ = "numeric", length = ______)
+    for (__ in 1:length(________)){
+      areas[__] <- pi * radius[i] ^ 2
+    }
+    areas
+
+5.  Complete the code below to calculate an area for each pair of
+    lengths and widths, store the areas in a vector, and after they are
+    all calculated print them out:
+
+<!-- -->
+
+    lengths = c(1.1, 2.2, 1.6)
+    widths = c(3.5, 2.4, 2.8)
+    areas <- vector(length = __________)
+    for (i in _____) {
+      areas[__] <- lengths[__] * widths[__]
+    }
+    areas

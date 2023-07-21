@@ -40,7 +40,10 @@ head(coffee_joined)
 ```
 
 ```{r}
-coffee_species <- coffee_joined %>% filter(CATEGORY == "species") %>% filter(distance_band == "within") %>% filter(!Point_Name == "1-651 Callejón Seco, Los Naranjos, Provincia de Chiriquí, PA (8.818, -82.481)")
+coffee_species <- coffee_joined %>% 
+  filter(CATEGORY == "species") %>% 
+  filter(distance_band == "within") %>% 
+  filter(!Point_Name == "1-651 Callejón Seco, Los Naranjos, Provincia de Chiriquí, PA (8.818, -82.481)")
 ```
 
 We could also use a more generalized R package `taxize` to standardize the common names to latin species epithets ("genus_species"). We won't develop this method but the beginnings of this approach are shown below.
@@ -396,7 +399,7 @@ As a quick aside, these data come from a paper that sought to summarize the accu
 Measuring phylogenetic diversity by summing unique branches in each phylogentic tree. 
 
 ```{r, messages = F}
-install.packages("phytools")
+#install.packages("phytools")
 library(phytools)
 ```
 
