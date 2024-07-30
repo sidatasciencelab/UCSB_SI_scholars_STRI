@@ -1,28 +1,12 @@
 # UCSB-SI Scholars Summer Trip to STRI in Panama
 
-This repository contains instructional materials for the UCSB-SI Scholars trip to Panama for summer 2023. We expect these materials to be entirely executable in either R Studio or jupyter notebooks using the [Smithsonian Data and Compute Hub (SDCH)](https://smithsonian.2i2c.cloud/). SDCH provides access to both course data and the necessary compute environment - students are required to select the necessary server option when logging in to SDCH. The exact server option will be specified at in any .Rmd or .ipynb contained in this repository. 
-
---------
-
-**Instructors**:
-* Mario Castellanos - Executive Director, Office of Education Partnerships, UCSB (mario.castellanos@ucsb.edu)
-* Ruth Bennett - Research Wildlife Biologist, Migratory Bird Center, Smithsonian National Zoo and Conservation Biology Institute (bennettr@si.edu)
-* Jesus Maldonado - Research Geneticist, Center for Conservation Genomics, Smithsonian National Zoo and Conservation Biology Institute (maldonadoj@si.edu)
-* Scott Sillett - Research Wildlife Biologist, Migratory Bird Center, Smithsonian National Zoo and Conservation Biology Institute (silletts@si.edu)
-* Cristina Soto-Balderas P20 Coordinator, Office of Education Partnerships,(cristina.soto.balderas@ucsb.edu)
-* Mark Torchin - Research Ecologist, Smithsonian Tropical Research Institute (torchinm@si.edu)
-* Alex White - Biodiversity Research Data Scientist, Smithsonian Data Science Lab, Smithsonian Office of Research Computing, OCIO (whiteae@si.edu)
-
-**Peer Mentors:**
-* Dalila Lara (dalilalara@ucbs.edu)
-* Zach Wilson (zacharycwillson@gmail.com)
-* Richie Montes Lemus (richard.montes.lemus@gmail.com)
+This repository contains instructional materials for the UCSB-SI Scholars trip to Panama for summer 2024. We expect these materials to be entirely executable in either R Studio or jupyter notebooks using the [Smithsonian Data and Compute Hub (SDCH)](https://smithsonian.2i2c.cloud/). SDCH provides access to both course data and the necessary compute environment - students are required to select the necessary server option when logging in to SDCH. The exact server option will be specified at in any .Rmd or .ipynb contained in this repository. 
 
 --------
 
 ## Course Framework
 
-The UCSB-SI Scholars STRI trip combines field excursions, informal biological observation/data collection, site visits to STRI field research stations, and data science/quantitative ecology workshops to expose students to the array of science opportunities available at STRI and similar locations in the conservation and biodiversity science universe. In 2023 we intend to take advantage of the fact that students will arrive in Panama with a robust introduction to R via their ERES summer workshop experience (which for most students took place in 2022). Data Science workshops will therefore focus on more advanced computational skills and lean more towards instruction pertaining to specific scientific concepts rather than a pure coding skills bootcamp. We expect to combine field data collection, acquisition of global datasets via the web, using R as a GIS to analyze geographic data and produce map based visualizations, and leveraging the tropics to better understand effective conservation strategies and the basic ecological and evolutionary mechanisms underpinning patterns of global biodiversity. 
+The UCSB-SI Scholars STRI trip combines field excursions, informal biological observation/data collection, site visits to STRI field research stations, and data science/quantitative ecology workshops to expose students to the array of science opportunities available at STRI and similar locations in the conservation and biodiversity science universe. In 2024 we intend to take advantage of the fact that students will arrive in Panama with a robust introduction to R via their ERES summer workshop experience (which for most students took place in 2023 or early summer 2024). Data Science workshops will therefore focus on more advanced computational skills and lean more towards instruction pertaining to specific scientific concepts rather than a pure coding skills bootcamp. We expect to combine field data collection, acquisition of global datasets via the web, using R as a GIS to analyze geographic data and produce map based visualizations, and leveraging the tropics to better understand effective conservation strategies and the basic ecological and evolutionary mechanisms underpinning patterns of global biodiversity. 
 
 --------
 
@@ -37,7 +21,7 @@ Instructors and students will investigate these questions together first in a sh
 ------------
 ## Leveraging published datasets to examine the impacts of coffee cultivation practices on birds
 
-One of the first objectives for our students will be to combine field data collected by Dr. Bennett and her colleagues with published global data sets of avian biodiversity. Students will learn first hand how field data can be combined with published work to examine specific questions (in the case tropical agro-forestry practices and their impacts) that were originally outside the purview of the published work. Students will gain skills in identifying and downloading published datasets from online repositories, combining those data with data collected from the field, and using this combination to assess the impacts of coffee cultivation practices on the biodiversity of birds in coffee plantations. Students will have censuses of bird species in forest, sun coffee, and shade coffee field sites. These species lists will be used to measure and compare biodiversity at the field sites using the following datasets: 
+One of the first objectives for our students will be to combine field data collected by Dr. Ruth Bennett and her colleagues with published global data sets of avian biodiversity. Students will learn first hand how field data can be combined with published work to examine specific questions (in the case tropical agro-forestry practices and their impacts) that were originally outside the purview of the published work. Students will gain skills in identifying and downloading published datasets from online repositories, combining those data with data collected from the field, and using this combination to assess the impacts of coffee cultivation practices on the biodiversity of birds in coffee plantations. Students will have censuses of bird species in forest, sun coffee, and shade coffee field sites. These species lists will be used to measure and compare biodiversity at the field sites using the following datasets: 
 
 #### Functional Diversity of Birds
 1. The first dataset represents trait data for global bird species (both morphological measurements and functional traits). This work combines measurements of museum specimens and field caught individuals of all bird species of the world with known information about their ecological traits:
@@ -102,7 +86,7 @@ BirdLife International and NatureServe. Bird Species Distribution Maps of the Wo
 }
 ```
 ----------
-## Final Project - Comparisons of biodiversity and climate between BCI and SCI
+## Final Project 
 
 The final project will build on the skills developed in the first half of our trip. More to come...
 
